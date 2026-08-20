@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2b2630">
+  <meta name="description" content="PackRat: the Talbot family shared Traverse City packing checklist.">
+  <title>PackRat</title>
+  <style>
+    :root {
+      --ink: #2b2630;
+      --muted: #716a74;
+      --paper: #fffaf2;
+      --card: #ffffff;
+      --line: #ddd3c7;
+      --accent: #9b3f4f;
+      --accent-2: #e7b45f;
+      --good: #47745d;
+      --soft: #f2e8dc;
+      --shadow: 0 12px 28px rgba(43, 38, 48, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 4%, rgba(231,180,95,.20), transparent 24rem),
+        radial-gradient(circle at 94% 20%, rgba(155,63,79,.10), transparent 22rem),
+        var(--paper);
+      font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    .shell {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 18px 16px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    .hero {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 4px 16px;
+    }
+
+    .rat {
+      display: grid;
+      place-items: center;
+      width: 66px;
+      height: 66px;
+      flex: 0 0 auto;
+      border: 2px solid var(--ink);
+      border-radius: 22px;
+      background: var(--accent-2);
+      box-shadow: 5px 5px 0 var(--ink);
+      font-size: 38px;
+      transform: rotate(-3deg);
+    }
+
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 2px; font-size: clamp(34px, 9vw, 54px); line-height: .96; letter-spacing: -0.04em; }
+    .tagline { margin: 0; color: var(--muted); font-weight: 700; }
+
+    .sync-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 8px 0 18px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.72);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .sync-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .sync-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-2); flex: 0 0 auto; }
+    .sync-dot.ok { background: var(--good); }
+    .sync-dot.bad { background: #bd3d3d; }
+    #syncText { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .tiny-button {
+      border: 0;
+      border-radius: 10px;
+      padding: 7px 10px;
+      background: var(--ink);
+      color: white;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .overall {
+      margin-bottom: 18px;
+      padding: 16px;
+      border: 2px solid var(--ink);
+      border-radius: 20px;
+      background: var(--card);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+
+    .overall-row { display: flex; justify-content: space-between; gap: 12px; align-items: end; }
+    .overall strong { font-size: 17px; }
+    .overall-count { font-size: 22px; font-weight: 950; }
+    .progress-track { height: 12px; margin-top: 10px; overflow: hidden; border-radius: 99px; background: var(--soft); border: 1px solid var(--line); }
+    .progress-fill { height: 100%; width: 0; background: var(--good); transition: width .2s ease; }
+
+    .section-label {
+      margin: 22px 4px 10px;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .list-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .list-card {
+      position: relative;
+      display: flex;
+      min-height: 145px;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 16px;
+      border: 2px solid var(--ink);
+      border-radius: 20px;
+      text-align: left;
+      background: var(--card);
+      color: var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    .list-card:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+    .list-card.is-complete { border-color: var(--good); box-shadow: 4px 4px 0 var(--good); }
+    .list-icon { font-size: 34px; line-height: 1; }
+    .list-title { display: block; font-size: 18px; font-weight: 950; line-height: 1.05; }
+    .list-subtitle { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; font-weight: 750; line-height: 1.25; }
+    .list-count { font-size: 12px; font-weight: 950; color: var(--accent); }
+    .list-card.is-complete .list-count { color: var(--good); }
+
+    .list-view { display: none; }
+    .list-view.is-open { display: block; }
+    .home-view.is-hidden { display: none; }
+
+    .list-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: -18px -16px 14px;
+      padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+      background: rgba(255,250,242,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(221,211,199,.85);
+    }
+
+    .back-button {
+      border: 0;
+      padding: 8px 0;
+      background: transparent;
+      color: var(--accent);
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .list-heading-row { display: flex; justify-content: space-between; gap: 14px; align-items: start; }
+    .list-heading { margin: 3px 0 3px; font-size: clamp(30px, 8vw, 44px); line-height: 1; letter-spacing: -0.035em; }
+    .list-description { margin: 0; color: var(--muted); font-size: 13px; font-weight: 750; }
+    .list-big-icon { font-size: 42px; }
+
+    .list-progress {
+      margin: 12px 0 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--ink);
+      color: white;
+      font-weight: 900;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .checklist { display: grid; gap: 9px; }
+    .check-row {
+      display: grid;
+      grid-template-columns: 34px 1fr 38px;
+      align-items: center;
+      gap: 9px;
+      min-height: 62px;
+      padding: 8px 8px 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+      box-shadow: 0 5px 14px rgba(43,38,48,.06);
+    }
+    .check-row.is-checked { opacity: .62; background: #eef5ef; }
+    .check-row.is-checked .check-text { text-decoration: line-through; }
+
+    .check-row input { position: absolute; opacity: 0; pointer-events: none; }
+    .check-box {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--ink);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 950;
+    }
+    .check-row.is-checked .check-box { background: var(--good); border-color: var(--good); color: white; }
+    .check-text { font-size: 16px; font-weight: 850; line-height: 1.25; }
+    .delete-button {
+      border: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: transparent;
+      color: #9d8b8b;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .add-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .add-form input {
+      width: 100%;
+      min-width: 0;
+      padding: 13px 14px;
+      border: 2px solid var(--line);
+      border-radius: 13px;
+      background: white;
+      color: var(--ink);
+      outline: none;
+    }
+    .add-form input:focus { border-color: var(--accent); }
+    .add-button {
+      border: 0;
+      border-radius: 13px;
+      padding: 0 16px;
+      background: var(--accent);
+      color: white;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .list-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .secondary-button {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: white;
+      color: var(--ink);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .footer-note { margin: 26px 4px 0; color: var(--muted); font-size: 12px; font-weight: 750; text-align: center; }
+
+    @media (max-width: 520px) {
+      .shell { padding-left: 13px; padding-right: 13px; }
+      .list-grid { grid-template-columns: 1fr; }
+      .list-card { min-height: 116px; }
+      .list-header { margin-left: -13px; margin-right: -13px; padding-left: 13px; padding-right: 13px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section id="homeView" class="home-view">
+      <header class="hero">
+        <div class="rat" aria-hidden="true">🐀</div>
+        <div>
+          <h1>PackRat</h1>
+          <p class="tagline">Traverse City • Aug 23–27</p>
+        </div>
+      </header>
+
+      <div class="sync-bar" role="status" aria-live="polite">
+        <div class="sync-left">
+          <span id="syncDot" class="sync-dot"></span>
+          <span id="syncText">Connecting the family checklist…</span>
+        </div>
+        <button id="syncButton" class="tiny-button" type="button">SYNC</button>
+      </div>
+
+      <section class="overall" aria-label="Overall packing progress">
+        <div class="overall-row">
+          <strong>Everybody + everything</strong>
+          <span id="overallCount" class="overall-count">0 / 0</span>
+        </div>
+        <div class="progress-track" aria-hidden="true"><div id="overallFill" class="progress-fill"></div></div>
+      </section>
+
+      <div class="section-label">Tap a list</div>
+      <div id="listGrid" class="list-grid"></div>
+      <p class="footer-note">Checks sync across phones. Porter’s Bag also syncs with Porter’s Day Arc.</p>
+    </section>
+
+    <section id="listView" class="list-view" aria-live="polite">
+      <header class="list-header">
+        <button id="backButton" class="back-button" type="button">← ALL LISTS</button>
+        <div class="list-heading-row">
+          <div>
+            <h2 id="listHeading" class="list-heading">Packing</h2>
+            <p id="listDescription" class="list-description"></p>
+          </div>
+          <div id="listBigIcon" class="list-big-icon" aria-hidden="true"></div>
+        </div>
+      </header>
+
+      <div class="list-progress">
+        <span id="listProgressLabel">PACKED</span>
+        <span id="listProgressCount">0 / 0</span>
+      </div>
+
+      <div id="checklist" class="checklist"></div>
+
+      <form id="addForm" class="add-form">
+        <input id="newItem" type="text" maxlength="120" placeholder="Add something…" autocomplete="off" required>
+        <button class="add-button" type="submit">ADD</button>
+      </form>
+
+      <div class="list-actions">
+        <button id="resetListButton" class="secondary-button" type="button">Reset this list</button>
+        <button id="syncListButton" class="secondary-button" type="button">Sync now</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const API_URL = "https://porterdailyhub.netlify.app/api/packrat";
+      const CACHE_KEY = "packrat:traverse-city-2026";
+      const POLL_MS = 4000;
+
+      const state = {
+        data: null,
+        currentListId: null,
+        syncing: false,
+        lastSync: null,
+        poll: null
+      };
+
+      const els = {
+        home: document.querySelector("#homeView"),
+        listView: document.querySelector("#listView"),
+        listGrid: document.querySelector("#listGrid"),
+        overallCount: document.querySelector("#overallCount"),
+        overallFill: document.querySelector("#overallFill"),
+        syncDot: document.querySelector("#syncDot"),
+        syncText: document.querySelector("#syncText"),
+        syncButton: document.querySelector("#syncButton"),
+        backButton: document.querySelector("#backButton"),
+        listHeading: document.querySelector("#listHeading"),
+        listDescription: document.querySelector("#listDescription"),
+        listBigIcon: document.querySelector("#listBigIcon"),
+        listProgressCount: document.querySelector("#listProgressCount"),
+        checklist: document.querySelector("#checklist"),
+        addForm: document.querySelector("#addForm"),
+        newItem: document.querySelector("#newItem"),
+        resetListButton: document.querySelector("#resetListButton"),
+        syncListButton: document.querySelector("#syncListButton")
+      };
+
+      const esc = (value = "") => String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+      function readCache() {
+        try {
+          const raw = localStorage.getItem(CACHE_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch { return null; }
+      }
+
+      function writeCache(data) {
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch {}
+      }
+
+      function setSyncStatus(kind, text) {
+        els.syncDot.className = `sync-dot${kind ? ` ${kind}` : ""}`;
+        els.syncText.textContent = text;
+      }
+
+      function listStats(list) {
+        const total = list?.items?.length || 0;
+        const checked = list?.items?.filter((entry) => entry.checked).length || 0;
+        return { total, checked };
+      }
+
+      function overallStats() {
+        if (!state.data?.lists) return { total: 0, checked: 0 };
+        return Object.values(state.data.lists).reduce((sum, list) => {
+          const stats = listStats(list);
+          sum.total += stats.total;
+          sum.checked += stats.checked;
+          return sum;
+        }, { total: 0, checked: 0 });
+      }
+
+      function renderHome() {
+        if (!state.data?.lists) return;
+        const overall = overallStats();
+        els.overallCount.textContent = `${overall.checked} / ${overall.total}`;
+        els.overallFill.style.width = `${overall.total ? (overall.checked / overall.total) * 100 : 0}%`;
+
+        els.listGrid.innerHTML = Object.entries(state.data.lists).map(([id, list]) => {
+          const stats = listStats(list);
+          const complete = stats.total > 0 && stats.checked === stats.total;
+          return `
+            <button class="list-card${complete ? " is-complete" : ""}" type="button" data-list-id="${esc(id)}">
+              <span>
+                <span class="list-icon" aria-hidden="true">${esc(list.icon || "📦")}</span>
+                <span class="list-title">${esc(list.title)}</span>
+                <span class="list-subtitle">${esc(list.subtitle || "")}</span>
+              </span>
+              <span class="list-count">${complete ? "✓ DONE" : `${stats.checked} / ${stats.total} packed`}</span>
+            </button>`;
+        }).join("");
+      }
+
+      function currentList() {
+        return state.data?.lists?.[state.currentListId] || null;
+      }
+
+      function renderList() {
+        const list = currentList();
+        if (!list) return;
+        const stats = listStats(list);
+        els.listHeading.textContent = list.title;
+        els.listDescription.textContent = list.subtitle || "";
+        els.listBigIcon.textContent = list.icon || "📦";
+        els.listProgressCount.textContent = `${stats.checked} / ${stats.total}`;
+        els.checklist.innerHTML = list.items.map((entry) => `
+          <div class="check-row${entry.checked ? " is-checked" : ""}" data-item-id="${esc(entry.id)}">
+            <label class="check-box" aria-label="${entry.checked ? "Uncheck" : "Check"} ${esc(entry.text)}">
+              <input type="checkbox" ${entry.checked ? "checked" : ""}>
+              <span aria-hidden="true">${entry.checked ? "✓" : ""}</span>
+            </label>
+            <span class="check-text">${esc(entry.text)}</span>
+            <button class="delete-button" type="button" aria-label="Remove ${esc(entry.text)}">×</button>
+          </div>`).join("");
+      }
+
+      function render() {
+        renderHome();
+        if (state.currentListId) renderList();
+      }
+
+      function showList(listId) {
+        if (!state.data?.lists?.[listId]) return;
+        state.currentListId = listId;
+        els.home.classList.add("is-hidden");
+        els.listView.classList.add("is-open");
+        renderList();
+        window.scrollTo({ top: 0, behavior: "instant" });
+        history.replaceState(null, "", `#${encodeURIComponent(listId)}`);
+      }
+
+      function showHome() {
+        state.currentListId = null;
+        els.listView.classList.remove("is-open");
+        els.home.classList.remove("is-hidden");
+        renderHome();
+        history.replaceState(null, "", location.pathname + location.search);
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+
+      function loadFromLocation() {
+        const id = decodeURIComponent(location.hash.replace(/^#/, ""));
+        if (id && state.data?.lists?.[id]) showList(id);
+      }
+
+      async function sync({ quiet = false } = {}) {
+        if (state.syncing) return;
+        state.syncing = true;
+        if (!quiet) setSyncStatus("", "Syncing…");
+        try {
+          const response = await fetch(API_URL, { cache: "no-store" });
+          if (!response.ok) throw new Error(`Sync returned ${response.status}`);
+          state.data = await response.json();
+          state.lastSync = new Date();
+          writeCache(state.data);
+          render();
+          setSyncStatus("ok", `Synced ${state.lastSync.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
+        } catch (error) {
+          console.error(error);
+          setSyncStatus("bad", state.data ? "Offline • showing last saved copy" : "Could not connect to PackRat");
+        } finally {
+          state.syncing = false;
+        }
+      }
+
+      async function mutate(payload) {
+        setSyncStatus("", "Saving…");
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            const details = await response.json().catch(() => ({}));
+            throw new Error(details.error || `Save returned ${response.status}`);
+          }
+          state.data = await response.json();
+          state.lastSync = new Date();
+          writeCache(state.data);
+          render();
+          setSyncStatus("ok", "Saved for everybody ✓");
+        } catch (error) {
+          console.error(error);
+          setSyncStatus("bad", "Could not save • try Sync");
+          await sync({ quiet: true });
+        }
+      }
+
+      els.listGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-list-id]");
+        if (button) showList(button.dataset.listId);
+      });
+
+      els.backButton.addEventListener("click", showHome);
+      els.syncButton.addEventListener("click", () => sync());
+      els.syncListButton.addEventListener("click", () => sync());
+
+      els.checklist.addEventListener("change", (event) => {
+        const checkbox = event.target.closest("input[type='checkbox']");
+        const row = checkbox?.closest("[data-item-id]");
+        if (!checkbox || !row || !state.currentListId) return;
+
+        const list = currentList();
+        const item = list?.items.find((entry) => entry.id === row.dataset.itemId);
+        if (item) {
+          item.checked = checkbox.checked;
+          render();
+        }
+
+        mutate({
+          action: "toggle",
+          listId: state.currentListId,
+          itemId: row.dataset.itemId,
+          checked: checkbox.checked
+        });
+      });
+
+      els.checklist.addEventListener("click", (event) => {
+        const button = event.target.closest(".delete-button");
+        const row = button?.closest("[data-item-id]");
+        if (!button || !row || !state.currentListId) return;
+        mutate({ action: "delete", listId: state.currentListId, itemId: row.dataset.itemId });
+      });
+
+      els.addForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const text = els.newItem.value.trim();
+        if (!text || !state.currentListId) return;
+        els.newItem.value = "";
+        mutate({ action: "add", listId: state.currentListId, text });
+      });
+
+      els.resetListButton.addEventListener("click", () => {
+        if (!state.currentListId) return;
+        const list = currentList();
+        if (!confirm(`Reset ${list?.title || "this list"} to its original items and uncheck everything?`)) return;
+        mutate({ action: "resetList", listId: state.currentListId });
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) sync({ quiet: true });
+      });
+
+      window.addEventListener("hashchange", () => {
+        const id = decodeURIComponent(location.hash.replace(/^#/, ""));
+        if (id && state.data?.lists?.[id]) showList(id);
+        else if (!id) showHome();
+      });
+
+      const cached = readCache();
+      if (cached?.lists) {
+        state.data = cached;
+        render();
+        setSyncStatus("", "Showing saved copy • syncing…");
+        loadFromLocation();
+      }
+
+      sync().then(() => loadFromLocation());
+      state.poll = window.setInterval(() => sync({ quiet: true }), POLL_MS);
+    })();
+  </script>
+</body>
+</html>
