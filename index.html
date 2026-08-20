@@ -3,617 +3,381 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#2b2630">
-  <meta name="description" content="PackRat: the Talbot family shared Traverse City packing checklist.">
+  <meta name="theme-color" content="#171719">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="PackRat — the Talbot family shared packing dashboard.">
   <title>PackRat</title>
   <style>
     :root {
-      --ink: #2b2630;
-      --muted: #716a74;
-      --paper: #fffaf2;
-      --card: #ffffff;
-      --line: #ddd3c7;
-      --accent: #9b3f4f;
-      --accent-2: #e7b45f;
-      --good: #47745d;
-      --soft: #f2e8dc;
-      --shadow: 0 12px 28px rgba(43, 38, 48, 0.12);
+      --ink:#171719;
+      --ink-2:#232326;
+      --paper:#f3efe7;
+      --card:#fbf8f2;
+      --muted:#76736d;
+      --line:#d8d1c5;
+      --pink:#ff4fa3;
+      --pink-soft:#ffd3e8;
+      --lake:#276b70;
+      --lake-soft:#d6e6e5;
+      --olive:#69705a;
+      --olive-soft:#e4e5dc;
+      --sand:#d9bf91;
+      --good:#496656;
+      --shadow:0 18px 40px rgba(20,20,22,.12);
+      --radius:24px;
     }
 
-    * { box-sizing: border-box; }
-    html { background: var(--paper); }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--ink);
+    *{box-sizing:border-box}
+    html{background:var(--ink);scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--ink);
       background:
-        radial-gradient(circle at 8% 4%, rgba(231,180,95,.20), transparent 24rem),
-        radial-gradient(circle at 94% 20%, rgba(155,63,79,.10), transparent 22rem),
+        radial-gradient(circle at 92% -4%, rgba(255,79,163,.15), transparent 26rem),
+        radial-gradient(circle at 0 42%, rgba(39,107,112,.09), transparent 30rem),
         var(--paper);
-      font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family:"Avenir Next","Helvetica Neue",Arial,sans-serif;
+      padding-bottom:calc(92px + env(safe-area-inset-bottom));
     }
+    button,input{font:inherit}
+    button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .shell{width:min(1040px,100%);margin:0 auto;padding:0 18px 48px}
 
-    button, input { font: inherit; }
-    button { -webkit-tap-highlight-color: transparent; }
-
-    .shell {
-      width: min(760px, 100%);
-      margin: 0 auto;
-      padding: 18px 16px calc(32px + env(safe-area-inset-bottom));
+    .app-top{
+      position:sticky;top:0;z-index:30;
+      margin:0 -18px;
+      padding:calc(14px + env(safe-area-inset-top)) 18px 12px;
+      background:rgba(23,23,25,.94);
+      color:white;
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(255,255,255,.08);
     }
+    .app-top-inner{width:min(1040px,100%);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .brand-mark{width:31px;height:31px;border:1px solid rgba(255,255,255,.35);border-radius:50%;display:grid;place-items:center;position:relative}
+    .brand-mark:before,.brand-mark:after{content:"";position:absolute;width:9px;height:9px;border:1px solid rgba(255,255,255,.7);border-radius:50%;top:-2px;background:var(--ink)}
+    .brand-mark:before{left:3px}.brand-mark:after{right:3px}
+    .brand-dot{width:7px;height:7px;border-radius:50%;background:var(--pink)}
+    .brand-name{font-size:15px;font-weight:950;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
+    .brand-name span{color:var(--pink)}
+    .sync-pill{display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:8px 11px;background:rgba(255,255,255,.08);color:#eee;font-size:12px;font-weight:800}
+    .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--sand)}
+    .sync-dot.ok{background:#74b58c}.sync-dot.bad{background:#e66a6a}
 
-    .hero {
-      display: flex;
-      gap: 14px;
-      align-items: center;
-      padding: 12px 4px 16px;
+    .hero{padding:34px 0 22px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:18px;align-items:stretch}
+    .hero-main{background:var(--ink);color:white;border-radius:30px;padding:30px;position:relative;overflow:hidden;min-height:290px;box-shadow:var(--shadow)}
+    .hero-main:before{content:"";position:absolute;inset:-40% -25% auto auto;width:420px;height:420px;border:1px solid rgba(255,255,255,.08);border-radius:45%;transform:rotate(25deg);box-shadow:0 0 0 28px rgba(255,255,255,.025),0 0 0 58px rgba(255,255,255,.02),0 0 0 90px rgba(255,255,255,.015)}
+    .eyebrow{position:relative;margin-bottom:12px;color:#c5c2bd;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+    .trip-title{position:relative;margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(42px,7vw,78px);line-height:.9;font-weight:400;letter-spacing:-.05em}
+    .trip-meta{position:relative;margin-top:15px;color:#c8c6c1;font-size:14px;font-weight:700}
+    .departure-tag{position:relative;display:inline-flex;margin-top:22px;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 12px;color:white;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .departure-tag strong{color:var(--pink);margin-right:6px}
+
+    .progress-card{background:var(--card);border:1px solid var(--line);border-radius:30px;padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between}
+    .progress-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .progress-label{font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.12em}
+    .progress-number{font-family:Georgia,serif;font-size:58px;line-height:.9;letter-spacing:-.05em}
+    .progress-number small{font-family:"Avenir Next",sans-serif;font-size:18px;color:var(--muted);letter-spacing:0}
+    .status-track{height:13px;margin:24px 0 14px;background:#e6dfd4;border-radius:99px;overflow:hidden;display:flex}
+    .status-track .packed{background:var(--pink)}
+    .status-track .staged{background:var(--olive)}
+    .status-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .status-stat{padding-top:10px;border-top:1px solid var(--line)}
+    .status-stat strong{display:block;font-size:18px}.status-stat span{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+
+    .section{margin-top:26px}
+    .section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:0 2px 12px}
+    .section-kicker{font-size:11px;color:var(--muted);font-weight:950;letter-spacing:.14em;text-transform:uppercase}
+    .section-title{margin:2px 0 0;font-family:Georgia,serif;font-weight:400;font-size:28px;letter-spacing:-.025em}
+    .section-note{font-size:12px;color:var(--muted);font-weight:750;text-align:right}
+
+    .people-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .person-card,.list-card{border:1px solid var(--line);background:rgba(251,248,242,.92);border-radius:22px;color:var(--ink);text-align:left;box-shadow:0 8px 24px rgba(20,20,22,.05);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+    .person-card:hover,.list-card:hover{transform:translateY(-2px);box-shadow:0 13px 30px rgba(20,20,22,.09);border-color:#bbb2a6}
+    .person-card{padding:18px;min-height:156px;display:flex;flex-direction:column;justify-content:space-between}
+    .person-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .person-initial{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--ink);color:white;font-family:Georgia,serif;font-size:18px}
+    .person-card:nth-child(2) .person-initial{background:var(--lake)}
+    .person-card:nth-child(3) .person-initial{background:var(--olive)}
+    .chev{font-size:22px;color:#aaa39b}
+    .person-name{margin-top:12px;font-weight:950;font-size:18px}
+    .mini-track{height:6px;border-radius:99px;background:#e6dfd4;overflow:hidden;display:flex;margin:10px 0 8px}
+    .mini-track .packed{background:var(--pink)}.mini-track .staged{background:var(--olive)}
+    .card-meta{font-size:12px;color:var(--muted);font-weight:750}
+
+    .saturday-card{position:relative;overflow:hidden;background:var(--lake);color:white;border-radius:28px;padding:24px;box-shadow:var(--shadow)}
+    .saturday-card:after{content:"SAT";position:absolute;right:-10px;bottom:-38px;font-family:Georgia,serif;font-size:150px;color:rgba(255,255,255,.055);line-height:1}
+    .sat-top{position:relative;z-index:1;display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+    .sat-title{margin:4px 0 6px;font-family:Georgia,serif;font-weight:400;font-size:32px;letter-spacing:-.03em}
+    .sat-copy{margin:0;color:#dce9e7;font-size:13px;font-weight:700}
+    .sat-count{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:9px 12px;font-size:12px;font-weight:900;white-space:nowrap}
+    .assignments{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+    .assignment{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:8px 10px;font-size:12px;font-weight:850}
+    .sat-button{position:relative;z-index:1;margin-top:20px;border:0;border-radius:12px;background:var(--pink);color:#18181a;padding:12px 16px;font-weight:950}
+
+    .list-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .list-card{padding:18px;min-height:132px;display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:start}
+    .icon-box{width:48px;height:48px;border-radius:15px;background:#ece6dc;display:grid;place-items:center;color:var(--ink)}
+    .icon-box svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .list-card-title{font-weight:950;font-size:16px;line-height:1.15}.list-card-sub{margin-top:5px;font-size:12px;color:var(--muted);font-weight:700;line-height:1.35}
+    .list-card-stats{margin-top:12px;display:flex;gap:7px;align-items:center;font-size:11px;font-weight:850;color:var(--muted)}
+    .dot{width:7px;height:7px;border-radius:50%;display:inline-block}.dot.packed{background:var(--pink)}.dot.staged{background:var(--olive)}
+
+    .archive-card{width:100%;border:1px dashed #bdb4a9;background:transparent;border-radius:18px;padding:15px 17px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--muted);font-weight:850}
+    .archive-count{background:#ded7cc;color:var(--ink);border-radius:999px;padding:5px 9px;font-size:11px}
+
+    .view{display:none}.view.is-open{display:block}
+    .detail-shell{padding-top:18px}
+    .detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .back{border:0;background:transparent;color:var(--lake);font-weight:950;padding:7px 0}
+    .detail-title{margin:4px 0 2px;font-family:Georgia,serif;font-weight:400;font-size:clamp(34px,7vw,50px);letter-spacing:-.04em}
+    .detail-sub{margin:0;color:var(--muted);font-size:13px;font-weight:750}
+    .detail-progress{margin:18px 0;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--card);display:flex;justify-content:space-between;gap:12px;font-size:12px;font-weight:900}
+    .items{display:grid;gap:10px}
+    .item-row{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:0 5px 16px rgba(20,20,22,.04)}
+    .item-main{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .item-text{font-size:15px;font-weight:850;line-height:1.35}
+    .destination{display:inline-block;margin-top:7px;border-radius:999px;background:var(--lake-soft);color:#245b60;padding:5px 8px;font-size:10px;font-weight:950;letter-spacing:.05em}
+    .assignee{display:inline-block;margin-top:7px;border-radius:999px;background:var(--pink-soft);color:#7a2851;padding:5px 8px;font-size:10px;font-weight:950;letter-spacing:.04em}
+    .archive-button{flex:0 0 auto;width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:transparent;color:#8e8880;font-size:15px}
+    .status-control{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:13px;padding:4px;background:#ece6dc;border-radius:13px}
+    .status-button{border:0;border-radius:10px;padding:9px 6px;background:transparent;color:#77716a;font-size:11px;font-weight:900}
+    .status-button.is-active[data-status="not_packed"]{background:white;color:var(--ink);box-shadow:0 2px 7px rgba(20,20,22,.08)}
+    .status-button.is-active[data-status="staged"]{background:var(--olive);color:white}
+    .status-button.is-active[data-status="packed"]{background:var(--pink);color:#21151b}
+    .add-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin:16px 0}
+    .add-form input{min-width:0;width:100%;border:1px solid var(--line);border-radius:13px;padding:13px 14px;background:white;color:var(--ink);outline:none}.add-form input:focus{border-color:var(--pink)}
+    .add-button{border:0;border-radius:13px;padding:0 16px;background:var(--ink);color:white;font-weight:950}
+
+    .archive-list{display:grid;gap:10px}.archived-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:14px 15px}.archived-row strong{display:block;font-size:14px}.archived-row span{display:block;margin-top:4px;color:var(--muted);font-size:11px;font-weight:750}.restore{border:0;border-radius:11px;background:var(--lake);color:white;padding:9px 11px;font-size:11px;font-weight:950}
+
+    .dock{position:fixed;z-index:40;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(460px,calc(100% - 24px));display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:6px;background:rgba(23,23,25,.94);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.1);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+    .dock button{border:0;border-radius:13px;background:transparent;color:#aaa6a1;padding:9px 6px;font-size:11px;font-weight:900}.dock button.is-active{background:#302e31;color:white}.dock button span{display:block;font-size:15px;margin-bottom:2px;color:var(--pink)}
+
+    .toast{position:fixed;z-index:60;left:50%;bottom:105px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:white;border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+    @media(max-width:780px){
+      .hero{grid-template-columns:1fr}.hero-main{min-height:245px}.progress-card{min-height:230px}.people-grid{grid-template-columns:1fr}.person-card{min-height:124px}.list-grid{grid-template-columns:1fr}.section-note{display:none}
     }
-
-    .rat {
-      display: grid;
-      place-items: center;
-      width: 66px;
-      height: 66px;
-      flex: 0 0 auto;
-      border: 2px solid var(--ink);
-      border-radius: 22px;
-      background: var(--accent-2);
-      box-shadow: 5px 5px 0 var(--ink);
-      font-size: 38px;
-      transform: rotate(-3deg);
-    }
-
-    h1, h2, p { margin-top: 0; }
-    h1 { margin-bottom: 2px; font-size: clamp(34px, 9vw, 54px); line-height: .96; letter-spacing: -0.04em; }
-    .tagline { margin: 0; color: var(--muted); font-weight: 700; }
-
-    .sync-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 8px 0 18px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(255,255,255,.72);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .sync-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .sync-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-2); flex: 0 0 auto; }
-    .sync-dot.ok { background: var(--good); }
-    .sync-dot.bad { background: #bd3d3d; }
-    #syncText { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    .tiny-button {
-      border: 0;
-      border-radius: 10px;
-      padding: 7px 10px;
-      background: var(--ink);
-      color: white;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .overall {
-      margin-bottom: 18px;
-      padding: 16px;
-      border: 2px solid var(--ink);
-      border-radius: 20px;
-      background: var(--card);
-      box-shadow: 5px 5px 0 var(--ink);
-    }
-
-    .overall-row { display: flex; justify-content: space-between; gap: 12px; align-items: end; }
-    .overall strong { font-size: 17px; }
-    .overall-count { font-size: 22px; font-weight: 950; }
-    .progress-track { height: 12px; margin-top: 10px; overflow: hidden; border-radius: 99px; background: var(--soft); border: 1px solid var(--line); }
-    .progress-fill { height: 100%; width: 0; background: var(--good); transition: width .2s ease; }
-
-    .section-label {
-      margin: 22px 4px 10px;
-      font-size: 12px;
-      font-weight: 950;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .list-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .list-card {
-      position: relative;
-      display: flex;
-      min-height: 145px;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 12px;
-      width: 100%;
-      padding: 16px;
-      border: 2px solid var(--ink);
-      border-radius: 20px;
-      text-align: left;
-      background: var(--card);
-      color: var(--ink);
-      box-shadow: 4px 4px 0 var(--ink);
-      cursor: pointer;
-      transition: transform .12s ease, box-shadow .12s ease;
-    }
-
-    .list-card:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
-    .list-card.is-complete { border-color: var(--good); box-shadow: 4px 4px 0 var(--good); }
-    .list-icon { font-size: 34px; line-height: 1; }
-    .list-title { display: block; font-size: 18px; font-weight: 950; line-height: 1.05; }
-    .list-subtitle { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; font-weight: 750; line-height: 1.25; }
-    .list-count { font-size: 12px; font-weight: 950; color: var(--accent); }
-    .list-card.is-complete .list-count { color: var(--good); }
-
-    .list-view { display: none; }
-    .list-view.is-open { display: block; }
-    .home-view.is-hidden { display: none; }
-
-    .list-header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      margin: -18px -16px 14px;
-      padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
-      background: rgba(255,250,242,.94);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(221,211,199,.85);
-    }
-
-    .back-button {
-      border: 0;
-      padding: 8px 0;
-      background: transparent;
-      color: var(--accent);
-      font-weight: 950;
-      cursor: pointer;
-    }
-
-    .list-heading-row { display: flex; justify-content: space-between; gap: 14px; align-items: start; }
-    .list-heading { margin: 3px 0 3px; font-size: clamp(30px, 8vw, 44px); line-height: 1; letter-spacing: -0.035em; }
-    .list-description { margin: 0; color: var(--muted); font-size: 13px; font-weight: 750; }
-    .list-big-icon { font-size: 42px; }
-
-    .list-progress {
-      margin: 12px 0 16px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: var(--ink);
-      color: white;
-      font-weight: 900;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .checklist { display: grid; gap: 9px; }
-    .check-row {
-      display: grid;
-      grid-template-columns: 34px 1fr 38px;
-      align-items: center;
-      gap: 9px;
-      min-height: 62px;
-      padding: 8px 8px 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: var(--card);
-      box-shadow: 0 5px 14px rgba(43,38,48,.06);
-    }
-    .check-row.is-checked { opacity: .62; background: #eef5ef; }
-    .check-row.is-checked .check-text { text-decoration: line-through; }
-
-    .check-row input { position: absolute; opacity: 0; pointer-events: none; }
-    .check-box {
-      display: grid;
-      place-items: center;
-      width: 30px;
-      height: 30px;
-      border: 2px solid var(--ink);
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 20px;
-      font-weight: 950;
-    }
-    .check-row.is-checked .check-box { background: var(--good); border-color: var(--good); color: white; }
-    .check-text { font-size: 16px; font-weight: 850; line-height: 1.25; }
-    .delete-button {
-      border: 0;
-      width: 36px;
-      height: 36px;
-      border-radius: 11px;
-      background: transparent;
-      color: #9d8b8b;
-      font-size: 22px;
-      cursor: pointer;
-    }
-
-    .add-form {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .add-form input {
-      width: 100%;
-      min-width: 0;
-      padding: 13px 14px;
-      border: 2px solid var(--line);
-      border-radius: 13px;
-      background: white;
-      color: var(--ink);
-      outline: none;
-    }
-    .add-form input:focus { border-color: var(--accent); }
-    .add-button {
-      border: 0;
-      border-radius: 13px;
-      padding: 0 16px;
-      background: var(--accent);
-      color: white;
-      font-weight: 950;
-      cursor: pointer;
-    }
-
-    .list-actions { display: flex; gap: 8px; margin-top: 14px; }
-    .secondary-button {
-      flex: 1;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 11px 12px;
-      background: white;
-      color: var(--ink);
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .footer-note { margin: 26px 4px 0; color: var(--muted); font-size: 12px; font-weight: 750; text-align: center; }
-
-    @media (max-width: 520px) {
-      .shell { padding-left: 13px; padding-right: 13px; }
-      .list-grid { grid-template-columns: 1fr; }
-      .list-card { min-height: 116px; }
-      .list-header { margin-left: -13px; margin-right: -13px; padding-left: 13px; padding-right: 13px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * { scroll-behavior: auto !important; transition: none !important; }
-    }
+    @media(min-width:781px){body{padding-bottom:40px}.dock{display:none}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
 <body>
-  <main class="shell">
-    <section id="homeView" class="home-view">
-      <header class="hero">
-        <div class="rat" aria-hidden="true">🐀</div>
-        <div>
-          <h1>PackRat</h1>
-          <p class="tagline">Traverse City • Aug 23–27</p>
-        </div>
-      </header>
+  <header class="app-top">
+    <div class="app-top-inner">
+      <button class="brand" id="brandHome" type="button" aria-label="PackRat home" style="border:0;background:transparent;color:inherit;padding:0">
+        <span class="brand-mark"><span class="brand-dot"></span></span>
+        <span class="brand-name">PACK<span>RAT</span></span>
+      </button>
+      <button id="syncButton" class="sync-pill" type="button"><span id="syncDot" class="sync-dot"></span><span id="syncText">Connecting…</span></button>
+    </div>
+  </header>
 
-      <div class="sync-bar" role="status" aria-live="polite">
-        <div class="sync-left">
-          <span id="syncDot" class="sync-dot"></span>
-          <span id="syncText">Connecting the family checklist…</span>
-        </div>
-        <button id="syncButton" class="tiny-button" type="button">SYNC</button>
+  <main class="shell">
+    <section id="homeView" class="view is-open">
+      <div class="hero">
+        <section class="hero-main">
+          <div class="eyebrow">Family travel manifest</div>
+          <h1 class="trip-title">Traverse<br>City</h1>
+          <div class="trip-meta">Aug 23–27 · Madison → Northern Michigan</div>
+          <div id="departureTag" class="departure-tag"><strong>Departure</strong> Sunday</div>
+        </section>
+        <section class="progress-card" aria-label="Overall packing status">
+          <div>
+            <div class="progress-top"><div><div class="progress-label">Trip readiness</div><div id="overallPercent" class="progress-number">0<small>%</small></div></div><div class="progress-label">PACK RAT / 01</div></div>
+            <div class="status-track"><div id="packedBar" class="packed"></div><div id="stagedBar" class="staged"></div></div>
+          </div>
+          <div class="status-breakdown">
+            <div class="status-stat"><strong id="packedCount">0</strong><span>Packed</span></div>
+            <div class="status-stat"><strong id="stagedCount">0</strong><span>Staged</span></div>
+            <div class="status-stat"><strong id="notPackedCount">0</strong><span>Not packed</span></div>
+          </div>
+        </section>
       </div>
 
-      <section class="overall" aria-label="Overall packing progress">
-        <div class="overall-row">
-          <strong>Everybody + everything</strong>
-          <span id="overallCount" class="overall-count">0 / 0</span>
-        </div>
-        <div class="progress-track" aria-hidden="true"><div id="overallFill" class="progress-fill"></div></div>
+      <section class="section">
+        <div class="section-head"><div><div class="section-kicker">01 · Travelers</div><h2 class="section-title">Everybody owns a lane.</h2></div><div class="section-note">Personal bags + personal responsibility</div></div>
+        <div id="peopleGrid" class="people-grid"></div>
       </section>
 
-      <div class="section-label">Tap a list</div>
-      <div id="listGrid" class="list-grid"></div>
-      <p class="footer-note">Checks sync across phones. Porter’s Bag also syncs with Porter’s Day Arc.</p>
+      <section class="section">
+        <div class="section-head"><div><div class="section-kicker">02 · Saturday</div><h2 class="section-title">Before the trip can happen.</h2></div><div class="section-note">House + car reset</div></div>
+        <div id="saturdayCard" class="saturday-card"></div>
+      </section>
+
+      <section class="section" id="loadoutSection">
+        <div class="section-head"><div><div class="section-kicker">03 · Load the car</div><h2 class="section-title">Things with destinations.</h2></div></div>
+        <div id="loadoutGrid" class="list-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><div class="section-kicker">04 · Shared gear</div><h2 class="section-title">Nobody gets to assume someone else packed it.</h2></div></div>
+        <div id="sharedGrid" class="list-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><div class="section-kicker">05 · Supplies</div><h2 class="section-title">Buy it. Pack it. Stop thinking about it.</h2></div></div>
+        <div id="suppliesGrid" class="list-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><div class="section-kicker">06 · Departure</div><h2 class="section-title">The door is not allowed to close until these are done.</h2></div></div>
+        <div id="departureGrid" class="list-grid"></div>
+      </section>
+
+      <section class="section">
+        <button id="archiveHomeButton" class="archive-card" type="button"><span>Removed items · review before we forget why we removed them</span><span id="archiveCount" class="archive-count">0</span></button>
+      </section>
     </section>
 
-    <section id="listView" class="list-view" aria-live="polite">
-      <header class="list-header">
-        <button id="backButton" class="back-button" type="button">← ALL LISTS</button>
-        <div class="list-heading-row">
-          <div>
-            <h2 id="listHeading" class="list-heading">Packing</h2>
-            <p id="listDescription" class="list-description"></p>
-          </div>
-          <div id="listBigIcon" class="list-big-icon" aria-hidden="true"></div>
-        </div>
-      </header>
+    <section id="listView" class="view detail-shell" aria-live="polite">
+      <button id="backButton" class="back" type="button">← Back to trip</button>
+      <div class="detail-header"><div><div id="detailKicker" class="section-kicker">PACKING LIST</div><h1 id="listHeading" class="detail-title">Packing</h1><p id="listDescription" class="detail-sub"></p></div></div>
+      <div class="detail-progress"><span id="detailProgressLabel">Progress</span><span id="detailProgressCount">0 / 0</span></div>
+      <div id="checklist" class="items"></div>
+      <form id="addForm" class="add-form"><input id="newItem" type="text" maxlength="120" placeholder="Add another item…" autocomplete="off" required><button class="add-button" type="submit">ADD</button></form>
+    </section>
 
-      <div class="list-progress">
-        <span id="listProgressLabel">PACKED</span>
-        <span id="listProgressCount">0 / 0</span>
-      </div>
-
-      <div id="checklist" class="checklist"></div>
-
-      <form id="addForm" class="add-form">
-        <input id="newItem" type="text" maxlength="120" placeholder="Add something…" autocomplete="off" required>
-        <button class="add-button" type="submit">ADD</button>
-      </form>
-
-      <div class="list-actions">
-        <button id="resetListButton" class="secondary-button" type="button">Reset this list</button>
-        <button id="syncListButton" class="secondary-button" type="button">Sync now</button>
-      </div>
+    <section id="archiveView" class="view detail-shell">
+      <button id="archiveBackButton" class="back" type="button">← Back to trip</button>
+      <div class="section-kicker">ARCHIVE</div><h1 class="detail-title">Removed items</h1><p class="detail-sub">Nothing disappears by accident. Restore anything the family decides belongs back on a list.</p>
+      <div id="archiveList" class="archive-list" style="margin-top:18px"></div>
     </section>
   </main>
+
+  <nav class="dock" aria-label="PackRat navigation">
+    <button id="dockHome" class="is-active" type="button"><span>⌂</span>Home</button>
+    <button id="dockSaturday" type="button"><span>22</span>Saturday</button>
+    <button id="dockArchive" type="button"><span>↺</span>Archive</button>
+  </nav>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
     (() => {
       const API_URL = "https://porterdailyhub.netlify.app/api/packrat";
-      const CACHE_KEY = "packrat:traverse-city-2026";
-      const POLL_MS = 4000;
+      const CACHE_KEY = "packrat:traverse-city-2026:v2";
+      const POLL_MS = 5000;
+      const DEPARTURE = new Date("2026-08-23T08:00:00-05:00");
+      const SECTION_FALLBACK = { jen:"people", blake:"people", porter:"people", jenCar:"loadout", blakeCar:"loadout", porterCar:"loadout", car:"loadout", hiking:"shared", swim:"shared", entertainment:"shared", food:"supplies", house:"supplies", store:"supplies", saturday:"departure", lastMinute:"departure" };
+      const KIND_FALLBACK = { saturday:"task", lastMinute:"task" };
+      const state = { data:null, currentListId:null, syncing:false, toastTimer:null };
 
-      const state = {
-        data: null,
-        currentListId: null,
-        syncing: false,
-        lastSync: null,
-        poll: null
-      };
-
+      const $ = (s) => document.querySelector(s);
       const els = {
-        home: document.querySelector("#homeView"),
-        listView: document.querySelector("#listView"),
-        listGrid: document.querySelector("#listGrid"),
-        overallCount: document.querySelector("#overallCount"),
-        overallFill: document.querySelector("#overallFill"),
-        syncDot: document.querySelector("#syncDot"),
-        syncText: document.querySelector("#syncText"),
-        syncButton: document.querySelector("#syncButton"),
-        backButton: document.querySelector("#backButton"),
-        listHeading: document.querySelector("#listHeading"),
-        listDescription: document.querySelector("#listDescription"),
-        listBigIcon: document.querySelector("#listBigIcon"),
-        listProgressCount: document.querySelector("#listProgressCount"),
-        checklist: document.querySelector("#checklist"),
-        addForm: document.querySelector("#addForm"),
-        newItem: document.querySelector("#newItem"),
-        resetListButton: document.querySelector("#resetListButton"),
-        syncListButton: document.querySelector("#syncListButton")
+        home:$("#homeView"), listView:$("#listView"), archiveView:$("#archiveView"), people:$("#peopleGrid"), saturday:$("#saturdayCard"), loadout:$("#loadoutGrid"), shared:$("#sharedGrid"), supplies:$("#suppliesGrid"), departure:$("#departureGrid"), syncDot:$("#syncDot"), syncText:$("#syncText"), syncButton:$("#syncButton"), overallPercent:$("#overallPercent"), packedBar:$("#packedBar"), stagedBar:$("#stagedBar"), packedCount:$("#packedCount"), stagedCount:$("#stagedCount"), notPackedCount:$("#notPackedCount"), archiveCount:$("#archiveCount"), checklist:$("#checklist"), listHeading:$("#listHeading"), listDescription:$("#listDescription"), detailKicker:$("#detailKicker"), detailProgressLabel:$("#detailProgressLabel"), detailProgressCount:$("#detailProgressCount"), addForm:$("#addForm"), newItem:$("#newItem"), archiveList:$("#archiveList"), toast:$("#toast"), dockHome:$("#dockHome"), dockSaturday:$("#dockSaturday"), dockArchive:$("#dockArchive")
       };
 
-      const esc = (value = "") => String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+      const esc = (v="") => String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+      const statusOf = (item) => ["not_packed","staged","packed"].includes(item?.status) ? item.status : (item?.checked ? "packed" : "not_packed");
+      const sectionOf = (id,list) => list?.section || SECTION_FALLBACK[id] || "shared";
+      const kindOf = (id,list) => list?.kind || KIND_FALLBACK[id] || "packing";
+      const listStats = (list) => (list?.items || []).reduce((a,item) => { a[statusOf(item)]++; a.total++; return a; }, {not_packed:0,staged:0,packed:0,total:0});
+      const pct = (n,d) => d ? Math.round(n/d*100) : 0;
 
-      function readCache() {
-        try {
-          const raw = localStorage.getItem(CACHE_KEY);
-          return raw ? JSON.parse(raw) : null;
-        } catch { return null; }
+      function readCache(){ try { const raw=localStorage.getItem(CACHE_KEY); return raw?JSON.parse(raw):null; } catch { return null; } }
+      function writeCache(data){ try { localStorage.setItem(CACHE_KEY,JSON.stringify(data)); } catch {} }
+      function toast(message){ clearTimeout(state.toastTimer); els.toast.textContent=message; els.toast.classList.add("show"); state.toastTimer=setTimeout(()=>els.toast.classList.remove("show"),1700); }
+      function setSync(kind,text){ els.syncDot.className=`sync-dot${kind?` ${kind}`:""}`; els.syncText.textContent=text; }
+
+      function icon(name){
+        const paths = {
+          bag:'<path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+          car:'<path d="M5 17h14l-1-6-2-3H8l-2 3-1 6Z"/><path d="M7 17v2M17 17v2M8 13h8"/>',
+          mountain:'<path d="m3 19 6-10 4 6 2-3 6 7H3Z"/>',
+          waves:'<path d="M3 8c3 0 3 2 6 2s3-2 6-2 3 2 6 2M3 14c3 0 3 2 6 2s3-2 6-2 3 2 6 2"/>',
+          game:'<path d="M7 9h10a4 4 0 0 1 4 4v3a3 3 0 0 1-5 2l-2-2h-4l-2 2a3 3 0 0 1-5-2v-3a4 4 0 0 1 4-4Z"/><path d="M8 12v4M6 14h4M16.5 13.5h.01M18.5 15.5h.01"/>',
+          cart:'<path d="M3 4h2l2 11h10l2-7H6"/><circle cx="9" cy="19" r="1"/><circle cx="17" cy="19" r="1"/>',
+          home:'<path d="m3 11 9-7 9 7v9H6v-9"/><path d="M10 20v-6h4v6"/>',
+          door:'<path d="M5 3h11v18H5z"/><path d="M16 5h3v16h-3M12 12h.01"/>',
+          default:'<path d="M5 7h14v13H5z"/><path d="M8 7V4h8v3"/>'
+        };
+        return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name]||paths.default}</svg>`;
       }
+      function iconFor(id){ if(["jen","blake","porter"].includes(id))return"bag"; if(id.includes("Car")||id==="car")return"car"; if(id==="hiking")return"mountain"; if(id==="swim")return"waves"; if(id==="entertainment")return"game"; if(id==="food"||id==="store")return"cart"; if(id==="house")return"home"; if(id==="lastMinute")return"door"; return"default"; }
 
-      function writeCache(data) {
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch {}
-      }
-
-      function setSyncStatus(kind, text) {
-        els.syncDot.className = `sync-dot${kind ? ` ${kind}` : ""}`;
-        els.syncText.textContent = text;
-      }
-
-      function listStats(list) {
-        const total = list?.items?.length || 0;
-        const checked = list?.items?.filter((entry) => entry.checked).length || 0;
-        return { total, checked };
-      }
-
-      function overallStats() {
-        if (!state.data?.lists) return { total: 0, checked: 0 };
-        return Object.values(state.data.lists).reduce((sum, list) => {
-          const stats = listStats(list);
-          sum.total += stats.total;
-          sum.checked += stats.checked;
-          return sum;
-        }, { total: 0, checked: 0 });
-      }
-
-      function renderHome() {
-        if (!state.data?.lists) return;
-        const overall = overallStats();
-        els.overallCount.textContent = `${overall.checked} / ${overall.total}`;
-        els.overallFill.style.width = `${overall.total ? (overall.checked / overall.total) * 100 : 0}%`;
-
-        els.listGrid.innerHTML = Object.entries(state.data.lists).map(([id, list]) => {
-          const stats = listStats(list);
-          const complete = stats.total > 0 && stats.checked === stats.total;
-          return `
-            <button class="list-card${complete ? " is-complete" : ""}" type="button" data-list-id="${esc(id)}">
-              <span>
-                <span class="list-icon" aria-hidden="true">${esc(list.icon || "📦")}</span>
-                <span class="list-title">${esc(list.title)}</span>
-                <span class="list-subtitle">${esc(list.subtitle || "")}</span>
-              </span>
-              <span class="list-count">${complete ? "✓ DONE" : `${stats.checked} / ${stats.total} packed`}</span>
-            </button>`;
-        }).join("");
-      }
-
-      function currentList() {
-        return state.data?.lists?.[state.currentListId] || null;
-      }
-
-      function renderList() {
-        const list = currentList();
-        if (!list) return;
-        const stats = listStats(list);
-        els.listHeading.textContent = list.title;
-        els.listDescription.textContent = list.subtitle || "";
-        els.listBigIcon.textContent = list.icon || "📦";
-        els.listProgressCount.textContent = `${stats.checked} / ${stats.total}`;
-        els.checklist.innerHTML = list.items.map((entry) => `
-          <div class="check-row${entry.checked ? " is-checked" : ""}" data-item-id="${esc(entry.id)}">
-            <label class="check-box" aria-label="${entry.checked ? "Uncheck" : "Check"} ${esc(entry.text)}">
-              <input type="checkbox" ${entry.checked ? "checked" : ""}>
-              <span aria-hidden="true">${entry.checked ? "✓" : ""}</span>
-            </label>
-            <span class="check-text">${esc(entry.text)}</span>
-            <button class="delete-button" type="button" aria-label="Remove ${esc(entry.text)}">×</button>
-          </div>`).join("");
-      }
-
-      function render() {
-        renderHome();
-        if (state.currentListId) renderList();
-      }
-
-      function showList(listId) {
-        if (!state.data?.lists?.[listId]) return;
-        state.currentListId = listId;
-        els.home.classList.add("is-hidden");
-        els.listView.classList.add("is-open");
-        renderList();
-        window.scrollTo({ top: 0, behavior: "instant" });
-        history.replaceState(null, "", `#${encodeURIComponent(listId)}`);
-      }
-
-      function showHome() {
-        state.currentListId = null;
-        els.listView.classList.remove("is-open");
-        els.home.classList.remove("is-hidden");
-        renderHome();
-        history.replaceState(null, "", location.pathname + location.search);
-        window.scrollTo({ top: 0, behavior: "instant" });
-      }
-
-      function loadFromLocation() {
-        const id = decodeURIComponent(location.hash.replace(/^#/, ""));
-        if (id && state.data?.lists?.[id]) showList(id);
-      }
-
-      async function sync({ quiet = false } = {}) {
-        if (state.syncing) return;
-        state.syncing = true;
-        if (!quiet) setSyncStatus("", "Syncing…");
-        try {
-          const response = await fetch(API_URL, { cache: "no-store" });
-          if (!response.ok) throw new Error(`Sync returned ${response.status}`);
-          state.data = await response.json();
-          state.lastSync = new Date();
-          writeCache(state.data);
-          render();
-          setSyncStatus("ok", `Synced ${state.lastSync.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
-        } catch (error) {
-          console.error(error);
-          setSyncStatus("bad", state.data ? "Offline • showing last saved copy" : "Could not connect to PackRat");
-        } finally {
-          state.syncing = false;
+      function ensurePreviewSaturday(data){
+        data.archived ||= [];
+        if(!data.lists?.saturday){
+          data.lists.saturday={title:"Saturday Before We Leave",shortTitle:"Saturday Prep",section:"departure",kind:"task",subtitle:"House + car reset • Saturday, Aug 22",items:[
+            ["sat-mow","Mow the Lawn","Porter"],["sat-weed","Weed","Blake + Parker"],["sat-dog-poop","Dog Poop","Porter"],["sat-guinea","Guinea Pig Cleaning","Porter"],["sat-fridge","Fridge","Parker"],["sat-car-wash","Car Wash","Blake"],["sat-tire-pressure","Tire Pressure","Blake"],["sat-trim-branch","Trim Branch","Blake"],["sat-toilets","Clean Toilets","Blake"],["sat-organize-packing","Organize all Packing","Parker"],["sat-water-flowers","Water Flowers","Parker"]
+          ].map(([id,text,assignee])=>({id,text,assignee,status:"not_packed",checked:false}))};
         }
+        return data;
       }
 
-      async function mutate(payload) {
-        setSyncStatus("", "Saving…");
-        try {
-          const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-          if (!response.ok) {
-            const details = await response.json().catch(() => ({}));
-            throw new Error(details.error || `Save returned ${response.status}`);
-          }
-          state.data = await response.json();
-          state.lastSync = new Date();
-          writeCache(state.data);
-          render();
-          setSyncStatus("ok", "Saved for everybody ✓");
-        } catch (error) {
-          console.error(error);
-          setSyncStatus("bad", "Could not save • try Sync");
-          await sync({ quiet: true });
-        }
+      function overallStats(){
+        const all=Object.values(state.data?.lists||{}).filter(l=>kindOf("",l)==="packing");
+        return all.reduce((sum,list)=>{const s=listStats(list);sum.total+=s.total;sum.packed+=s.packed;sum.staged+=s.staged;sum.not_packed+=s.not_packed;return sum;},{total:0,packed:0,staged:0,not_packed:0});
       }
 
-      els.listGrid.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-list-id]");
-        if (button) showList(button.dataset.listId);
-      });
-
-      els.backButton.addEventListener("click", showHome);
-      els.syncButton.addEventListener("click", () => sync());
-      els.syncListButton.addEventListener("click", () => sync());
-
-      els.checklist.addEventListener("change", (event) => {
-        const checkbox = event.target.closest("input[type='checkbox']");
-        const row = checkbox?.closest("[data-item-id]");
-        if (!checkbox || !row || !state.currentListId) return;
-
-        const list = currentList();
-        const item = list?.items.find((entry) => entry.id === row.dataset.itemId);
-        if (item) {
-          item.checked = checkbox.checked;
-          render();
-        }
-
-        mutate({
-          action: "toggle",
-          listId: state.currentListId,
-          itemId: row.dataset.itemId,
-          checked: checkbox.checked
-        });
-      });
-
-      els.checklist.addEventListener("click", (event) => {
-        const button = event.target.closest(".delete-button");
-        const row = button?.closest("[data-item-id]");
-        if (!button || !row || !state.currentListId) return;
-        mutate({ action: "delete", listId: state.currentListId, itemId: row.dataset.itemId });
-      });
-
-      els.addForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const text = els.newItem.value.trim();
-        if (!text || !state.currentListId) return;
-        els.newItem.value = "";
-        mutate({ action: "add", listId: state.currentListId, text });
-      });
-
-      els.resetListButton.addEventListener("click", () => {
-        if (!state.currentListId) return;
-        const list = currentList();
-        if (!confirm(`Reset ${list?.title || "this list"} to its original items and uncheck everything?`)) return;
-        mutate({ action: "resetList", listId: state.currentListId });
-      });
-
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) sync({ quiet: true });
-      });
-
-      window.addEventListener("hashchange", () => {
-        const id = decodeURIComponent(location.hash.replace(/^#/, ""));
-        if (id && state.data?.lists?.[id]) showList(id);
-        else if (!id) showHome();
-      });
-
-      const cached = readCache();
-      if (cached?.lists) {
-        state.data = cached;
-        render();
-        setSyncStatus("", "Showing saved copy • syncing…");
-        loadFromLocation();
+      function renderProgress(){
+        const s=overallStats(); const readiness=s.total?pct(s.packed+s.staged,s.total):0;
+        els.overallPercent.innerHTML=`${readiness}<small>%</small>`;
+        els.packedBar.style.width=`${pct(s.packed,s.total)}%`; els.stagedBar.style.width=`${pct(s.staged,s.total)}%`;
+        els.packedCount.textContent=s.packed; els.stagedCount.textContent=s.staged; els.notPackedCount.textContent=s.not_packed;
+        const ms=DEPARTURE-new Date(); const days=Math.max(0,Math.ceil(ms/86400000));
+        $("#departureTag").innerHTML=days>0?`<strong>${days} day${days===1?"":"s"}</strong> until departure`:`<strong>Departure</strong> today`;
       }
 
-      sync().then(() => loadFromLocation());
-      state.poll = window.setInterval(() => sync({ quiet: true }), POLL_MS);
+      function miniBar(stats){return `<div class="mini-track"><span class="packed" style="width:${pct(stats.packed,stats.total)}%"></span><span class="staged" style="width:${pct(stats.staged,stats.total)}%"></span></div>`;}
+      function renderPeople(){
+        const ids=["jen","blake","porter"];
+        els.people.innerHTML=ids.filter(id=>state.data.lists[id]).map((id,index)=>{const list=state.data.lists[id],s=listStats(list),name=list.shortTitle||list.title.replace(/'s Bag$/,'');return `<button class="person-card" type="button" data-open-list="${id}"><div><div class="person-top"><span class="person-initial">${esc(name.charAt(0))}</span><span class="chev">›</span></div><div class="person-name">${esc(name)}</div></div><div>${miniBar(s)}<div class="card-meta">${s.packed} packed · ${s.staged} staged · ${s.not_packed} left</div></div></button>`;}).join("");
+      }
+
+      function renderSaturday(){
+        const list=state.data.lists.saturday;if(!list){els.saturday.innerHTML="";return}const s=listStats(list);
+        const workloads={Parker:0,Blake:0,Porter:0}; list.items.filter(i=>statusOf(i)!=="packed").forEach(i=>{const a=i.assignee||"";Object.keys(workloads).forEach(n=>{if(a.includes(n))workloads[n]++})});
+        els.saturday.innerHTML=`<div class="sat-top"><div><div class="section-kicker" style="color:#bcd6d4">Saturday · Aug 22</div><h3 class="sat-title">Clear the runway.</h3><p class="sat-copy">The house, yard and car have their own checklist. Packing does not get to swallow these jobs.</p></div><div class="sat-count">${s.packed} / ${s.total} done</div></div><div class="assignments"><span class="assignment">Parker · ${workloads.Parker} left</span><span class="assignment">Blake · ${workloads.Blake} left</span><span class="assignment">Porter · ${workloads.Porter} left</span></div><button class="sat-button" type="button" data-open-list="saturday">OPEN SATURDAY PLAN →</button>`;
+      }
+
+      function listCard(id,list){const s=listStats(list);return `<button class="list-card" type="button" data-open-list="${esc(id)}"><span class="icon-box">${icon(iconFor(id))}</span><span><span class="list-card-title">${esc(list.shortTitle||list.title)}</span><span class="list-card-sub">${esc(list.subtitle||"")}</span><span class="list-card-stats"><span class="dot packed"></span>${s.packed} packed <span class="dot staged"></span>${s.staged} staged · ${s.not_packed} left</span></span><span class="chev">›</span></button>`;}
+      function renderSection(target,section,exclude=[]){target.innerHTML=Object.entries(state.data.lists).filter(([id,list])=>sectionOf(id,list)===section&&!exclude.includes(id)).map(([id,list])=>listCard(id,list)).join("");}
+
+      function renderHome(){ if(!state.data?.lists)return; renderProgress();renderPeople();renderSaturday();renderSection(els.loadout,"loadout");renderSection(els.shared,"shared");renderSection(els.supplies,"supplies");renderSection(els.departure,"departure",["saturday"]);els.archiveCount.textContent=(state.data.archived||[]).length; }
+
+      function splitDestination(text){const parts=String(text).split("→");return {main:parts[0].trim(),destination:parts.slice(1).join("→").trim()};}
+      function currentList(){return state.data?.lists?.[state.currentListId]||null;}
+      function statusLabels(list){return kindOf(state.currentListId,list)==="task"?["To do","In progress","Done"]:["Not packed","Staged / ready","Packed"];}
+      function renderList(){
+        const list=currentList();if(!list)return;const s=listStats(list),labels=statusLabels(list),isTask=kindOf(state.currentListId,list)==="task";
+        els.detailKicker.textContent=isTask?"DEPARTURE TASKS":"PACKING LIST";els.listHeading.textContent=list.title;els.listDescription.textContent=list.subtitle||"";els.detailProgressLabel.textContent=isTask?"Task progress":"Packing progress";els.detailProgressCount.textContent=`${s.packed} done · ${s.staged} in progress · ${s.not_packed} left`;
+        els.checklist.innerHTML=(list.items||[]).map(item=>{const st=statusOf(item),parts=splitDestination(item.text);return `<article class="item-row" data-item-id="${esc(item.id)}"><div class="item-main"><div><div class="item-text">${esc(parts.main)}</div>${parts.destination?`<span class="destination">→ ${esc(parts.destination)}</span>`:""}${item.assignee?`<span class="assignee">${esc(item.assignee)}</span>`:""}</div><button class="archive-button" type="button" data-archive-item="${esc(item.id)}" aria-label="Move ${esc(parts.main)} to removed items">⌫</button></div><div class="status-control">${["not_packed","staged","packed"].map((status,i)=>`<button type="button" class="status-button${st===status?" is-active":""}" data-status="${status}">${labels[i]}</button>`).join("")}</div></article>`;}).join("");
+      }
+
+      function renderArchive(){
+        const rows=state.data?.archived||[]; els.archiveList.innerHTML=rows.length?rows.map(entry=>`<div class="archived-row"><div><strong>${esc(entry.item?.text||"Removed item")}</strong><span>From ${esc(entry.listTitle||entry.listId)} · ${entry.archivedAt?new Date(entry.archivedAt).toLocaleDateString():"recently"}</span></div><button class="restore" type="button" data-restore="${esc(entry.id)}">RESTORE</button></div>`).join(""):`<div class="archived-row"><div><strong>Nothing removed.</strong><span>The archive is empty, which is suspiciously organized.</span></div></div>`;
+      }
+
+      function setView(view,listId=null){
+        [els.home,els.listView,els.archiveView].forEach(v=>v.classList.remove("is-open"));
+        els.dockHome.classList.toggle("is-active",view==="home");els.dockSaturday.classList.toggle("is-active",view==="list"&&listId==="saturday");els.dockArchive.classList.toggle("is-active",view==="archive");
+        if(view==="home"){state.currentListId=null;els.home.classList.add("is-open");renderHome();history.replaceState(null,"",location.pathname+location.search)}
+        else if(view==="archive"){state.currentListId=null;els.archiveView.classList.add("is-open");renderArchive();history.replaceState(null,"","#archive")}
+        else{state.currentListId=listId;els.listView.classList.add("is-open");renderList();history.replaceState(null,"",`#${encodeURIComponent(listId)}`)}
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+
+      async function sync({quiet=false}={}){if(state.syncing)return;state.syncing=true;if(!quiet)setSync("","Refreshing…");try{const r=await fetch(API_URL,{cache:"no-store"});if(!r.ok)throw new Error(`Sync ${r.status}`);state.data=ensurePreviewSaturday(await r.json());writeCache(state.data);renderHome();if(state.currentListId)renderList();if(location.hash==="#archive")renderArchive();setSync("ok",`Synced ${new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`)}catch(e){console.error(e);setSync("bad",state.data?"Offline · saved copy":"Offline")}finally{state.syncing=false}}
+      async function mutate(payload){setSync("","Saving…");try{const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||`Save ${r.status}`)}state.data=ensurePreviewSaturday(await r.json());writeCache(state.data);renderHome();if(state.currentListId)renderList();if(location.hash==="#archive")renderArchive();setSync("ok","Saved for everybody");return true}catch(e){console.error(e);setSync("bad","Could not save");toast("That change did not save yet");await sync({quiet:true});return false}}
+
+      document.addEventListener("click",(event)=>{
+        const open=event.target.closest("[data-open-list]");if(open){setView("list",open.dataset.openList);return}
+        const status=event.target.closest("[data-status]");if(status&&state.currentListId){const row=status.closest("[data-item-id]");if(row){const item=currentList()?.items.find(i=>i.id===row.dataset.itemId);if(item){item.status=status.dataset.status;item.checked=item.status==="packed";renderList();renderHome();mutate({action:"status",listId:state.currentListId,itemId:item.id,status:item.status})}}return}
+        const archive=event.target.closest("[data-archive-item]");if(archive&&state.currentListId){const item=currentList()?.items.find(i=>i.id===archive.dataset.archiveItem);if(item&&confirm(`Move “${item.text.split("→")[0].trim()}” to Removed Items?`))mutate({action:"archive",listId:state.currentListId,itemId:item.id}).then(ok=>{if(ok)toast("Moved to Removed Items")});return}
+        const restore=event.target.closest("[data-restore]");if(restore){mutate({action:"restore",archiveId:restore.dataset.restore}).then(ok=>{if(ok)toast("Restored")});return}
+      });
+
+      els.addForm.addEventListener("submit",e=>{e.preventDefault();const text=els.newItem.value.trim();if(!text||!state.currentListId)return;els.newItem.value="";mutate({action:"add",listId:state.currentListId,text})});
+      $("#backButton").addEventListener("click",()=>setView("home"));$("#archiveBackButton").addEventListener("click",()=>setView("home"));$("#brandHome").addEventListener("click",()=>setView("home"));$("#archiveHomeButton").addEventListener("click",()=>setView("archive"));els.syncButton.addEventListener("click",()=>sync());els.dockHome.addEventListener("click",()=>setView("home"));els.dockSaturday.addEventListener("click",()=>setView("list","saturday"));els.dockArchive.addEventListener("click",()=>setView("archive"));
+      document.addEventListener("visibilitychange",()=>{if(!document.hidden)sync({quiet:true})});
+
+      const cached=readCache();if(cached?.lists){state.data=ensurePreviewSaturday(cached);renderHome();setSync("","Saved copy · refreshing")}
+      sync().then(()=>{const id=decodeURIComponent(location.hash.replace(/^#/,""));if(id==="archive")setView("archive");else if(id&&state.data?.lists?.[id])setView("list",id)});
+      setInterval(()=>sync({quiet:true}),POLL_MS);
     })();
   </script>
 </body>
