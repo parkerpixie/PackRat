@@ -1,18 +1,20 @@
 name: PackRat dashboard progress fix
 
 on:
-  issues:
-    types: [opened]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
 
 jobs:
   patch-dashboard:
-    if: github.event.issue.title == 'TRIGGER PACKRAT PROGRESS MERGE'
+    if: github.event.pull_request.title == 'Apply PackRat progress split'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Add phase-specific progress dashboard
         run: |
           python - <<'PY'
@@ -137,5 +139,5 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "Split individual packing from Sunday truck progress"
-            git push
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
           fi
