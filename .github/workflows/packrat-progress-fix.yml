@@ -1,16 +1,15 @@
 name: PackRat dashboard progress fix
 
-# retriggered to merge dashboard change into main
 on:
-  push:
-    paths:
-      - '.github/workflows/packrat-progress-fix.yml'
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
 
 jobs:
   patch-dashboard:
+    if: github.event.issue.title == 'TRIGGER PACKRAT PROGRESS MERGE'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
