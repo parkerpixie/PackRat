@@ -1,0 +1,141 @@
+name: PackRat dashboard progress fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/packrat-progress-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add phase-specific progress dashboard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          marker = 'PACKRAT_PHASE_PROGRESS_V1'
+          if marker in s:
+              print('Progress split already installed.')
+              raise SystemExit(0)
+
+          addon = r'''
+<script id="packrat-phase-progress">
+/* PACKRAT_PHASE_PROGRESS_V1
+   Dashboard-only calculations. This script NEVER writes checklist data. */
+(() => {
+  const API_URL = "https://porterdailyhub.netlify.app/api/packrat";
+  const PERSONAL_IDS = ["jen", "blake", "porter"];
+  const statusOf = item => ["not_packed","staged","packed"].includes(item?.status)
+    ? item.status
+    : (item?.checked ? "packed" : "not_packed");
+  const pct = (n,d) => d ? Math.round((n/d)*100) : 0;
+  const statsFor = lists => lists.reduce((sum,list) => {
+    (list?.items || []).forEach(item => {
+      const st = statusOf(item);
+      sum[st]++;
+      sum.total++;
+    });
+    return sum;
+  }, {packed:0, staged:0, not_packed:0, total:0});
+
+  function truckListEntries(data){
+    return Object.entries(data?.lists || {}).filter(([id,list]) => {
+      const hay = `${id} ${list?.title||''} ${list?.shortTitle||''} ${list?.subtitle||''}`.toLowerCase();
+      const bagsToTruck = /(bags?.*(truck|car)|(truck|car).*bags?)/.test(hay);
+      const finalCheck = /(before\s*(we\s*)?leave|right\s*before|last[\s_-]*minute|final\s*check)/.test(hay);
+      return bagsToTruck || finalCheck || id === 'lastMinute';
+    });
+  }
+
+  function cardMarkup(prefix,label,numberLabel,note){
+    return `<section class="progress-card phase-card" aria-label="${label}">
+      <div>
+        <div class="progress-top">
+          <div><div class="progress-label">${label}</div><div id="${prefix}Percent" class="progress-number">0<small>%</small></div></div>
+          <div class="progress-label">${numberLabel}</div>
+        </div>
+        <div class="status-track"><div id="${prefix}PackedBar" class="packed"></div><div id="${prefix}StagedBar" class="staged"></div></div>
+        <div class="phase-note">${note}</div>
+      </div>
+      <div class="status-breakdown">
+        <div class="status-stat"><strong id="${prefix}Packed">0</strong><span>${prefix==='truck'?'Loaded / done':'Packed'}</span></div>
+        <div class="status-stat"><strong id="${prefix}Staged">0</strong><span>${prefix==='truck'?'Staged / ready':'Staged'}</span></div>
+        <div class="status-stat"><strong id="${prefix}Left">0</strong><span>${prefix==='truck'?'Left / checks':'Still to pack'}</span></div>
+      </div>
+    </section>`;
+  }
+
+  function install(){
+    if (document.querySelector('.phase-progress-stack')) return;
+    const old = document.querySelector('.hero > .progress-card');
+    if (!old) return;
+    const stack = document.createElement('div');
+    stack.className = 'phase-progress-stack';
+    stack.innerHTML =
+      cardMarkup('personal','Individual bag packing','PACK RAT / 01','Parker + Blake + Porter only • staged counts as handled tonight') +
+      cardMarkup('truck','Sunday 6 AM truck + final check','PACK RAT / 02','Bags to Truck + Before We Leave • load at 6:00 • leave 6:30–7:00');
+    old.replaceWith(stack);
+
+    const style = document.createElement('style');
+    style.textContent = `
+      .phase-progress-stack{display:grid;gap:10px;align-content:stretch}
+      .phase-progress-stack .progress-card{min-height:0}
+      .phase-note{margin:-3px 0 13px;color:var(--muted);font-size:10px;font-weight:550;line-height:1.35}
+      @media(max-width:780px){.phase-progress-stack{gap:10px}.phase-note{font-size:12px}.phase-progress-stack .progress-number{font-size:39px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function paint(prefix,s){
+    const ready = s.packed + s.staged;
+    const q = id => document.getElementById(id);
+    if (!q(`${prefix}Percent`)) return;
+    q(`${prefix}Percent`).innerHTML = `${pct(ready,s.total)}<small>%</small>`;
+    q(`${prefix}PackedBar`).style.width = `${pct(s.packed,s.total)}%`;
+    q(`${prefix}StagedBar`).style.width = `${pct(s.staged,s.total)}%`;
+    q(`${prefix}Packed`).textContent = s.packed;
+    q(`${prefix}Staged`).textContent = s.staged;
+    q(`${prefix}Left`).textContent = s.not_packed;
+  }
+
+  async function refresh(){
+    install();
+    try {
+      const r = await fetch(API_URL,{cache:'no-store'});
+      if (!r.ok) return;
+      const data = await r.json();
+      const personalLists = PERSONAL_IDS.map(id => data?.lists?.[id]).filter(Boolean);
+      const truckLists = truckListEntries(data).map(([,list]) => list);
+      paint('personal',statsFor(personalLists));
+      paint('truck',statsFor(truckLists));
+    } catch(e) {
+      console.warn('Phase progress refresh failed', e);
+    }
+  }
+
+  refresh();
+  setInterval(refresh, 5000);
+  document.addEventListener('visibilitychange',() => { if (!document.hidden) refresh(); });
+})();
+</script>
+'''
+          s = s.replace('</body>', addon + '\n</body>')
+          p.write_text(s)
+          PY
+      - name: Commit dashboard-only change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Split individual packing from Sunday truck progress"
+            git push
+          fi
